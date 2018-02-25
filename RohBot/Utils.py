@@ -1,6 +1,6 @@
 import yaml
 
-def loadBotToken(configFile="./Config"):
+def loadBotToken(configFile="../Config"):
     try:
         configObj = yaml.load(file(configFile, "r"))
         token = configObj["bot-token"]
