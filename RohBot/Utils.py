@@ -16,6 +16,5 @@ def loadOWMToken(configFile="../Config"):
         configObj = yaml.load(file(configFile, "r"))
         token = configObj["owm-token"]
     except Exception:
-        print("Couldn't read config file")
-        exit(2)
+        return None
     return token
