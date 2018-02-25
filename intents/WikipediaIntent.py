@@ -18,7 +18,6 @@ class WikipediaIntent(Intent):
     @staticmethod
     def getUrlSummaryForTopic(topicName):
 
-        sum = None
         try:
             wikiPage = page(topicName)
         except PageError as e:
@@ -37,7 +36,6 @@ class WikipediaIntent(Intent):
 
     @staticmethod
     def execute(str, bot, chat_id):
-        answer = ""
         keyword = WikipediaIntent.filterKeyword(str)
         if keyword is None:
             answer = "I don't know what to do, sorry. Please reword your request."
@@ -45,4 +43,3 @@ class WikipediaIntent(Intent):
             answer = WikipediaIntent.getUrlSummaryForTopic(keyword)
 
         bot.send_message(chat_id, answer)
-        return ""
