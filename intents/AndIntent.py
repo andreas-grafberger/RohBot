@@ -1,9 +1,13 @@
 from intents.Intent import Intent
+
 import yaml
 import os
 import errno
+import time
+import datetime
 
-
+from PIL import Image, ImageDraw
+from io import BytesIO
 
 class Field:
     def __init__(self, size, player1, player2):
@@ -15,6 +19,8 @@ class Field:
         self.player = player1
         self.player1 = player1
         self.player2 = player2
+        self.startDate = time.time()
+        self.endDate = 0
 
     def get(self, x, y):
         if not self.isValid(x, y): return ' '
@@ -25,6 +31,7 @@ class Field:
         if not self.isValid(x, y): return False
 
         self.data[y * self.size + x] = c
+        self.markIfDone()
         return True
 
     def isValid(self, x, y):
@@ -36,6 +43,12 @@ class Field:
 
     def getPlayer(self):
         return self.player
+
+    def getFirstPlayer(self):
+        return self.player1
+
+    def getSecondPlayer(self):
+        return self.player2
 
     def togglePlayer(self):
         if self.player == self.player1:
@@ -50,6 +63,31 @@ class Field:
         if id == self.player1: return 'X'
         if id == self.player2: return 'O'
         return ' '
+
+    def markIfDone(self):
+        if self.endDate != 0: return
+
+        #TODO this just tests for a full field, but a won game is also done
+        for y in xrange(0, self.size):
+            for x in xrange(0, self.size):
+                if self.get(x, y) == ' ': return
+
+        self.endDate = time.time()
+
+    def isDone(self):
+        return self.endDate != 0
+
+    def getWinner(self):
+        if not self.isDone(): return 0
+        #TODO determine winner
+
+        return 0
+
+    def getStartDate(self):
+        return self.startDate
+
+    def getEndDate(self):
+        return self.endDate
 
     def getPrint(self):
         printfield = "";
@@ -91,6 +129,25 @@ class Field:
                 printfield = printfield + "\n"
 
         return printfield;
+
+    def getImage(self):
+        scale = 80;
+        inset = 20;
+        img = Image.new("RGB", (self.size*scale, self.size*scale), (255, 255, 255))
+        draw = ImageDraw.Draw(img)
+        draw.rectangle((1, 1, self.size*scale-1-1, self.size*scale-1-1), outline=(0, 0, 0))
+        for y in xrange(0, self.size):
+            for x in xrange(0, self.size):
+                # border
+                draw.rectangle((x*scale, y*scale, (x+1)*scale-1, (y+1)*scale-1), outline=(0, 0, 0))
+
+                if self.get(x, y) == 'X':
+                    draw.line((x*scale+inset, y*scale+inset, (x+1)*scale-inset, (y+1)*scale-inset), fill=(0, 0, 0), width=1)
+                    draw.line(((x+1)*scale-inset, y*scale+inset, x*scale+inset, (y+1)*scale-inset), fill=(0, 0, 0), width=1)
+                elif self.get(x, y) == 'O':
+                    draw.ellipse((x*scale+inset, y*scale+inset, (x+1)*scale-inset, (y+1)*scale-inset), outline=(0, 0, 0))
+
+        return img
 
 
 class AndIntent(Intent):
@@ -160,6 +217,24 @@ class AndIntent(Intent):
                 AndIntent.sendReply(bot, chat_id, reply)
                 return ""
 
+            elif str_split[0] == "listdone" or str_split[0] == "ld":
+                glist = AndIntent.listCompletedGames(chat_id)
+                reply = "Abgeschlossene Spiele ("+str(len(glist))+"):"
+                reply = reply + "\n"
+                pos = 1
+                for game in glist:
+                    winner = game.getWinner()
+                    reply = reply + str(pos)+": "
+                    if winner == 0:
+                        reply = reply + "Unentschieden\n"
+                    else:
+                        reply = reply + "Sieger: " + AndIntent.getName(winner) + "\n"
+                    reply = reply + "\n"
+                    pos = pos + 1
+
+                AndIntent.sendReply(bot, chat_id, reply)
+                return ""
+
             elif str_split[0] == "challenge" or str_split[0] == "c":
                 if len(str_split)!=2:
                     AndIntent.sendError(bot, chat_id, "challange [name]\nFordert einen Spieler zu einem Spiel heraus")
@@ -187,6 +262,7 @@ class AndIntent(Intent):
                     yaml.dump(AndIntent.games, f)
 
                 AndIntent.sendReply(bot, chat_id, "Herausforderung versandt")
+                AndIntent.sendReply(bot, other_id, AndIntent.getName(chat_id)+" hat dich herausgefordert!")
                 return ""
 
             elif str_split[0] == "show" or str_split[0] == "s":
@@ -209,11 +285,59 @@ class AndIntent(Intent):
 
                 game = glist[num-1]
 
-                state = game.getPrint()
-                state = state + "\n"
+                state = "Spiel "+str(num)+": \n"
                 state = state + "Am Zug: " + AndIntent.getName(game.getPlayer())
-                AndIntent.sendReply(bot, chat_id, state)
 
+                img = game.getImage()
+                AndIntent.sendReplayWithImage(bot, chat_id, state, img)
+                print(game.getPrint())
+                return ""
+
+            elif str_split[0] == "showdone" or str_split[0] == "sd":
+                if len(str_split)!=2:
+                    AndIntent.sendError(bot, chat_id, "Bitte Spielnummer angeben!")
+                    return ""
+
+                try:
+                    int(str_split[1])
+                except:
+                    AndIntent.sendError(bot, chat_id, "Ungueltige Spielnummer!")
+                    return ""
+
+                num = int(str_split[1])
+                glist = AndIntent.listCompletedGames(chat_id)
+
+                if num<1 or num>len(glist):
+                    AndIntent.sendError(bot, chat_id, "Ungueltige Spielnummer!")
+                    return ""
+
+                game = glist[num-1]
+
+                state = "Spiel "+str(num)+": \n"
+
+                winner = game.getWinner()
+                if winner == 0:
+                    state = state + "Unentschieden\n"
+                else:
+                    state = state + "Sieger: " + AndIntent.getName(winner) + "\n"
+
+                state = state + "Spieler: \n"
+                state = state + "    " + AndIntent.getName(game.getFirstPlayer())
+                state = state + "\n"
+                state = state + "    " + AndIntent.getName(game.getSecondPlayer())
+                state = state + "\n"
+
+                state = state + "Gespielt: \n"
+                state = state + "    Von: "
+                state = state + datetime.datetime.fromtimestamp(game.getStartDate()).strftime('%d.%m.%Y %H:%M:%S')
+                state = state + "\n"
+                state = state + "    Bis: "
+                state = state + datetime.datetime.fromtimestamp(game.getEndDate()).strftime('%d.%m.%Y %H:%M:%S')
+                state = state + "\n"
+
+                img = game.getImage()
+                AndIntent.sendReplayWithImage(bot, chat_id, state, img)
+                print(game.getPrint())
                 return ""
 
             elif str_split[0] == "play" or str_split[0] == "p":
@@ -261,22 +385,38 @@ class AndIntent(Intent):
                 game.set(posx, posy, game.getPlayerChar(chat_id))
                 game.togglePlayer()
 
+                # Game finished -> Show Result
+                if game.isDone():
+                    winner = game.getWinner()
+
+                    state = "Spiel beendet:\n"
+                    if winner == 0:
+                        state = state + "Unentschieden\n"
+                    else:
+                        state = state + "Sieger: "+AndIntent.getName(winner) + "\n"
+
+                    img = game.getImage()
+                    AndIntent.sendReplayWithImage(bot, chat_id, state, img)
+                    AndIntent.sendReplayWithImage(bot, game.getPlayer(), state, img)
+                # Send current state
+                else:
+                    state = "In Spiel " + str(num) + ": \n"
+                    state = state + "Am Zug: " + AndIntent.getName(game.getPlayer())
+
+                    img = game.getImage()
+                    AndIntent.sendReplayWithImage(bot, chat_id, state, img)
+                    print(game.getPrint())
+
+                    # notify other player
+                    glist = AndIntent.listGames(game.getPlayer())
+                    gindex = glist.index(game) + 1
+
+                    oreply = "In Spiel " + str(gindex) + ": \n"
+                    oreply = oreply + AndIntent.getName(chat_id) + " hat einen Zug durchgefuehrt: \n"
+                    oreply = oreply + "Am Zug: " + AndIntent.getName(game.getPlayer())
+                    AndIntent.sendReplayWithImage(bot, game.getPlayer(), oreply, img)
                 with open("./anddata/games", 'w') as f:
                     yaml.dump(AndIntent.games, f)
-
-                state = game.getPrint()
-                state = state + "\n"
-                state = state + "Am Zug: " + AndIntent.getName(game.getPlayer())
-                AndIntent.sendReply(bot, chat_id, "Zug durchgefuehrt: \n"+state)
-
-                # notify other player
-                glist = AndIntent.listGames(game.getPlayer())
-                gindex = glist.index(game)+1
-
-                oreply = AndIntent.getName(chat_id)+" hat einen Zug durchgefuehrt: \n"
-                oreply = oreply + "\n"
-                oreply = oreply + "In Spiel "+str(gindex)+": \n"
-                AndIntent.sendReply(bot, game.getPlayer(), oreply+state)
                 return ""
 
             else:
@@ -313,6 +453,18 @@ class AndIntent(Intent):
     @staticmethod
     def sendReply(bot, chat_id, reply):
         if bot!=0: bot.send_message(chat_id, reply)
+        print(reply)
+        return ""
+
+    @staticmethod
+    def sendReplayWithImage(bot, chat_id, reply, image):
+        if bot!=0:
+            bio = BytesIO()
+            bio.name = 'image.jpg'
+            image.save(bio, 'JPEG')
+            bio.seek(0)
+            bot.send_message(chat_id, reply)
+            bot.send_photo(chat_id, photo=bio)
         print(reply)
         return ""
 
@@ -370,7 +522,17 @@ class AndIntent(Intent):
         glist = []
 
         for key in AndIntent.games:
-            if AndIntent.games[key].isPlayer(chat_id):
+            if AndIntent.games[key].isPlayer(chat_id) and not AndIntent.games[key].isDone():
+                glist.append(AndIntent.games[key])
+
+        return glist;
+
+    @staticmethod
+    def listCompletedGames(chat_id):
+        glist = []
+
+        for key in AndIntent.games:
+            if AndIntent.games[key].isPlayer(chat_id) and AndIntent.games[key].isDone():
                 glist.append(AndIntent.games[key])
 
         return glist;
