@@ -1,4 +1,5 @@
 python-telegram-bot
 pyyaml
-wikipedia==1.4.0
+wikipedia
 pytest
+rake-nltk
