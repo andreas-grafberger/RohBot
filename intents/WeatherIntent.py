@@ -1,11 +1,11 @@
 from intents.Intent import Intent
 import requests
-from Utils import loadOWMToken
-
+from RohBot.Utils import loadOWMToken
+import json
 
 class WeatherIntent(Intent):
 
-    weatherUrl = 'http://api.openweathermap.org/data/2.5/weather?'
+    weatherUrl = 'http://api.openweathermap.org/data/2.5/weather'
     keywords = ['Wetter']
 
     @staticmethod
@@ -19,16 +19,22 @@ class WeatherIntent(Intent):
         return split # params will be returned
 
     @staticmethod
-    def getWeather(location):
-        data = {'location': location, 'APPID': loadOWMToken()}
-        r = requests.get(WeatherIntent.weatherUrl, str(data))
-        return r
+    def getWeatherData(location):
+        data = {'q':location, 'units': 'metric','APPID':loadOWMToken()}
+        r = requests.get(WeatherIntent.weatherUrl, data)
+        if r.status_code != 200:
+            return None
+        return r.json()
 
     @staticmethod
     def execute(str, bot, chat_id):
         # type: (object, object, object) -> object
         location = WeatherIntent.filterKeyWords(str)[0]
-        print (WeatherIntent.getWeather(location))
-        return ""
-
-WeatherIntent.execute("Wetter Augsburg", None, None);
+        data = WeatherIntent.getWeatherData(location)
+        ioData = {
+            'name': data['name'],
+            'description': data['weather'][0]['description'],
+            'temp': data['main']['temp']
+        }
+        message = "In {name} there is a {description} and it has {temp} degree celcius".format(**ioData)
+        bot.send_message(chat_id, message)
