@@ -40,5 +40,10 @@ class WeatherIntent(Intent):
     def execute(str, bot, chat_id):
         # type: (object, object, object) -> object
         location = WeatherIntent.filterKeyWords(str)[0]
+        if location is None:
+            return None
         data = WeatherIntent.getWeatherData(location)
-        bot.send_message(chat_id, WeatherIntent.createMessage(data))
+        if data is None:
+            bot.send_message(chat_id, "Weather Service can not be accessed right now.")
+        else:
+            bot.send_message(chat_id, WeatherIntent.createMessage(data))
