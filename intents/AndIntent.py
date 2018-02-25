@@ -105,13 +105,13 @@ class AndIntent(Intent):
             raise
 
     try:
-        nameToID = yaml.load(file("./anddata/name_to_id", "r"))
-        idToName = yaml.load(file("./anddata/id_to_name", "r"))
+        nameToID = yaml.load(open("./anddata/name_to_id", "r"))
+        idToName = yaml.load(open("./anddata/id_to_name", "r"))
     except Exception:
         nameToID = dict()
         idToName = dict()
     try:
-        games = yaml.load(file("./anddata/games", "r"))
+        games = yaml.load(open("./anddata/games", "r"))
     except Exception as e:
         print(e)
         games = dict()
@@ -147,7 +147,7 @@ class AndIntent(Intent):
                     AndIntent.sendError(bot, chat_id, "Name ungueltig! (3-12 Zeichen)")
                     return ""
 
-            elif str_split[0] == "list":
+            elif str_split[0] == "list" or str_split[0] == "l":
                 glist = AndIntent.listGames(chat_id)
                 reply = "Aktuelle Spiele ("+str(len(glist))+"):"
                 reply = reply + "\n"
@@ -160,7 +160,7 @@ class AndIntent(Intent):
                 AndIntent.sendReply(bot, chat_id, reply)
                 return ""
 
-            elif str_split[0] == "challenge":
+            elif str_split[0] == "challenge" or str_split[0] == "c":
                 if len(str_split)!=2:
                     AndIntent.sendError(bot, chat_id, "challange [name]\nFordert einen Spieler zu einem Spiel heraus")
                     return ""
@@ -189,7 +189,7 @@ class AndIntent(Intent):
                 AndIntent.sendReply(bot, chat_id, "Herausforderung versandt")
                 return ""
 
-            elif str_split[0] == "show":
+            elif str_split[0] == "show" or str_split[0] == "s":
                 if len(str_split)!=2:
                     AndIntent.sendError(bot, chat_id, "Bitte Spielnummer angeben!")
                     return ""
@@ -216,7 +216,7 @@ class AndIntent(Intent):
 
                 return ""
 
-            elif str_split[0] == "play":
+            elif str_split[0] == "play" or str_split[0] == "p":
                 if len(str_split)!=4:
                     AndIntent.sendError(bot, chat_id, "Bitte Spielnummer und Position(X,Y) angeben!\nplay [spiel] [x] [y]")
                     return ""
@@ -264,12 +264,19 @@ class AndIntent(Intent):
                 with open("./anddata/games", 'w') as f:
                     yaml.dump(AndIntent.games, f)
 
-                state = "Zug durchgefuehrt:"
-                state = state + "\n"
-                state = state + game.getPrint()
+                state = game.getPrint()
                 state = state + "\n"
                 state = state + "Am Zug: " + AndIntent.getName(game.getPlayer())
-                AndIntent.sendReply(bot, chat_id, state)
+                AndIntent.sendReply(bot, chat_id, "Zug durchgefuehrt: \n"+state)
+
+                # notify other player
+                glist = AndIntent.listGames(game.getPlayer())
+                gindex = glist.index(game)+1
+
+                oreply = AndIntent.getName(chat_id)+" hat einen Zug durchgefuehrt: \n"
+                oreply = oreply + "\n"
+                oreply = oreply + "In Spiel "+str(gindex)+": \n"
+                AndIntent.sendReply(bot, game.getPlayer(), oreply+state)
                 return ""
 
             else:
@@ -330,9 +337,11 @@ class AndIntent(Intent):
                 return 6
             pos = pos + 1
 
+        # map name and id
         AndIntent.nameToID[name] = chat_id
         AndIntent.idToName[chat_id] = name
 
+        # save maps
         with open("./anddata/name_to_id", 'w') as f:
             yaml.dump(AndIntent.nameToID, f)
         with open("./anddata/id_to_name", 'w') as f:
