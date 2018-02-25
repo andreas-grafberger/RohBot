@@ -1,0 +1,3 @@
+python-telegram-bot
+pyyaml
+wikipedia==1.4.0
