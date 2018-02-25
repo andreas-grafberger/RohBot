@@ -1,5 +1,4 @@
-from RohBot.BotConnector import BotConnector
-from RohBot.intents import Intent
+from intents.Intent import Intent
 
 from wikipedia import DisambiguationError, PageError, page
 from rake_nltk import Rake
@@ -38,7 +37,6 @@ class WikipediaIntent(Intent):
 
     @staticmethod
     def execute(str, chat_id):
-        answer = ""
         keyword = WikipediaIntent.filterKeyword(str)
         if keyword is None:
             answer = "I don't know what to do, sorry. Please reword your request."
@@ -46,4 +44,3 @@ class WikipediaIntent(Intent):
             answer = WikipediaIntent.getUrlSummaryForTopic(keyword)
 
         BotConnector.getInstance().send_message(chat_id, answer)
-        return ""
