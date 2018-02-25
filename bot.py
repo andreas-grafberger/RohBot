@@ -1,4 +1,5 @@
 import telegram
+from intents.Horoscope import Horoscope
 
 from Utils import loadBotToken
 
@@ -12,4 +13,4 @@ if __name__ == "__main__":
     lastText = lastMessage.message.text
     lastOffset = lastMessage.update_id
 
-    bot.send_message(chat_id, "Test!")
+    Horoscope.execute(lastText, bot, chat_id)
