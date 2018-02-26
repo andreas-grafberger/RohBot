@@ -1,4 +1,4 @@
-from intents.Intent import Intent
+from Intent import Intent
 
 from wikipedia import DisambiguationError, PageError, page
 from rake_nltk import Rake
