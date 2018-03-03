@@ -1,6 +1,8 @@
 import telegram
 import time
-from Utils import loadBotToken
+
+from BotConnector import BotConnector
+
 
 def lookupLastMessage(bot):
     global lastOffset
@@ -23,7 +25,7 @@ def lookupLastMessage(bot):
 if __name__ == "__main__":
     lastOffset = 0
 
-    bot = telegram.Bot(token=loadBotToken())
+    bot = BotConnector.getInstance()
 
     while True:
         try:

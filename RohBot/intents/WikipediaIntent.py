@@ -1,4 +1,4 @@
-from intents.Intent import Intent
+from Intent import Intent
 
 from wikipedia import DisambiguationError, PageError, page
 from rake_nltk import Rake
@@ -18,6 +18,7 @@ class WikipediaIntent(Intent):
     @staticmethod
     def getUrlSummaryForTopic(topicName):
 
+        sum = None
         try:
             wikiPage = page(topicName)
         except PageError as e:
@@ -35,11 +36,11 @@ class WikipediaIntent(Intent):
         return sum
 
     @staticmethod
-    def execute(str, bot, chat_id):
+    def execute(str, chat_id):
         keyword = WikipediaIntent.filterKeyword(str)
         if keyword is None:
             answer = "I don't know what to do, sorry. Please reword your request."
         else:
             answer = WikipediaIntent.getUrlSummaryForTopic(keyword)
 
-        bot.send_message(chat_id, answer)
+        BotConnector.getInstance().send_message(chat_id, answer)

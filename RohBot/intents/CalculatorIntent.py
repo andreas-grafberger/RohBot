@@ -1,6 +1,8 @@
 from Intent import Intent
 import re
 
+from RohBot.BotConnector import BotConnector
+
 
 class CalculatorIntent(Intent):
 
@@ -17,8 +19,9 @@ class CalculatorIntent(Intent):
         return result
 
     @staticmethod
-    def execute(string, bot, chat_id):
+    def execute(string, chat_id):
         answer = CalculatorIntent.evaluate(string)
+        bot = BotConnector.getInstance()
         if answer is None:
             bot.send_message(chat_id, "I cannot calculate that...")
         else:
