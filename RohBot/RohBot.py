@@ -2,7 +2,9 @@ import telegram
 import time
 
 from BotConnector import BotConnector
+from intents.IntentDelegator import IntentDelegator
 
+global delegator
 
 def lookupLastMessage(bot):
     global lastOffset
@@ -20,12 +22,14 @@ def lookupLastMessage(bot):
     lastText = lastMessage.message.text
     lastOffset = lastMessage.update_id
 
-    bot.send_message(chat_id, "You wrote: " + lastText)
+    #bot.send_message(chat_id, "You wrote: " + lastText)
+
+    delegator.handleRequest(chat_id, lastText)
 
 if __name__ == "__main__":
     lastOffset = 0
-
     bot = BotConnector.getInstance()
+    delegator = IntentDelegator()
 
     while True:
         try:
