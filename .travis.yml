@@ -1,7 +1,19 @@
+env:
+  global:
+    - CC_TEST_REPORTER_ID=a30a6b74efd89e74f691a51119b224b56ac52afd9a82de4d7c3ca5e1940bd954
 language: python
 python:
   - "2.7"
 install:
   - pip install -r requirements.txt
+  - pip install pytest-cov
+before_script:
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
 script:
-  - python -m pytest tests/*
+  - coverage run -m pytest tests/*
+  # for codecoverage on codeclimate.com
+after_script:
+  - coverage html
+  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
