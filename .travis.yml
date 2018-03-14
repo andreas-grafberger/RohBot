@@ -16,5 +16,5 @@ script:
   - coverage run -m pytest tests/*
   # for codecoverage on codeclimate.com
 after_script:
-  - coverage html
-  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
+  - coverage xml
+  - ./cc-test-reporter after-build -t coverage.py --exit-code $TRAVIS_TEST_RESULT
