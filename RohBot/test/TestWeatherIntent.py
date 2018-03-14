@@ -10,8 +10,7 @@ class TestWeatherIntent(object):
             'weather': [{'description': 'beautiful sky'}],
             'main': {'temp': 10}
         }
-        wi = WI()
-        message = WI.createMessage(wi, data)
+        message = WI.createMessage(data)
         assert(message, "In Munich there is a beautiful sky an it has 10 degrees celcius.")
 
     def test_filterKeyWords(self):
