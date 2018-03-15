@@ -1,6 +1,6 @@
 from Intent import Intent
 
-from wikipedia import DisambiguationError, PageError, page
+from wikipedia import DisambiguationError, PageError, page, summary
 from rake_nltk import Rake
 
 
@@ -20,7 +20,7 @@ class WikipediaIntent(Intent):
 
         sum = None
         try:
-            wikiPage = page(topicName)
+            sum = summary(topicName, sentences=2)
         except PageError as e:
             sum = "Could not find page for " + topicName
         except DisambiguationError as e:
@@ -29,10 +29,7 @@ class WikipediaIntent(Intent):
                 sum = "Could not find page for " + topicName
             else:
                 firstOption = options[0]
-                wikiPage = page(firstOption)
-                sum = wikiPage.summary
-        else:
-            sum = wikiPage.summary
+                sum = summary(firstOption, sentences=2)
         return sum
 
     @staticmethod
@@ -43,4 +40,5 @@ class WikipediaIntent(Intent):
         else:
             answer = WikipediaIntent.getUrlSummaryForTopic(keyword)
 
+        from BotConnector import BotConnector
         BotConnector.getInstance().send_message(chat_id, answer)
