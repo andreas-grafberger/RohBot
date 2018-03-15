@@ -1,3 +1,6 @@
+import spacy
+
+from RohBot.BotConnector import BotConnector
 from Intent import Intent
 import requests
 from RohBot.Utils import loadOWMToken
@@ -7,7 +10,7 @@ import json
 class WeatherIntent(Intent):
 
     weatherUrl = 'http://api.openweathermap.org/data/2.5/weather'
-    keywords = ['Wetter']
+    keywords = ['Wetter', 'weather']
 
     @staticmethod
     def filterKeyWords(str):
@@ -19,7 +22,15 @@ class WeatherIntent(Intent):
                 split.remove(keyword)
         return split # params will be returned
 
-    def getWeatherData(self, location):
+    @staticmethod
+    def extractLocation(message):
+        nlp = spacy.load('en')
+        doc = nlp(unicode(message))
+        locs = [ent.text for ent in doc.ents if ent.label_ == 'GPE' and ent.text.lower() != 'weather']
+        return locs[0]
+
+    @staticmethod
+    def getWeatherData(location):
         appid = loadOWMToken()
         if appid is None:
             return None
@@ -29,7 +40,8 @@ class WeatherIntent(Intent):
             return None
         return r.json()
 
-    def createMessage(self, data):
+    @staticmethod
+    def createMessage(data):
         ioData = {
             'name': data['name'],
             'description': data['weather'][0]['description'],
@@ -38,12 +50,13 @@ class WeatherIntent(Intent):
         return "In {name} there is a {description} and it has {temp} degree celcius".format(**ioData)
 
     @staticmethod
-    def execute(str, bot, chat_id):
+    def execute(str,  chat_id):
         # type: (object, object, object) -> object
-        location = WeatherIntent.filterKeyWords(str)[0]
+        location = WeatherIntent.extractLocation(str)
         if location is None:
             return None
         data = WeatherIntent.getWeatherData(location)
+        bot = BotConnector.getInstance()
         if data is None:
             bot.send_message(chat_id, "Weather Service can not be accessed right now.")
         else:

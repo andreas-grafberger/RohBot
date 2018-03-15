@@ -13,7 +13,7 @@ before_script:
   - chmod +x ./cc-test-reporter
   - ./cc-test-reporter before-build
 script:
-  - coverage run -m pytest tests/*
+  - coverage run -m pytest RohBot/test/*
   # for codecoverage on codeclimate.com
 after_script:
   - coverage xml
