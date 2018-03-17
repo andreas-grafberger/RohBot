@@ -1,9 +1,9 @@
 import spacy
 
-from RohBot.BotConnector import BotConnector
+from BotConnector import BotConnector
 from Intent import Intent
 import requests
-from RohBot.Utils import loadOWMToken
+from Utils import loadOWMToken
 import json
 
 
