@@ -15,8 +15,7 @@ before_script:
 script:
   - cd RohBot
   - coverage run -m pytest test/*
-  - cd ..
   # for codecoverage on codeclimate.com
 after_script:
   - coverage xml
-  - ./cc-test-reporter after-build -t coverage.py --exit-code $TRAVIS_TEST_RESULT
+  - ../cc-test-reporter after-build -t coverage.py --exit-code $TRAVIS_TEST_RESULT
