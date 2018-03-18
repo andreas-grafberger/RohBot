@@ -1,5 +1,5 @@
 import pytest
-from RohBot.intents.CalculatorIntent import CalculatorIntent as CI
+from intents.CalculatorIntent import CalculatorIntent as CI
 
 
 class TestCalculatorIntent(object):

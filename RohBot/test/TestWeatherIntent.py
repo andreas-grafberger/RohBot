@@ -1,5 +1,5 @@
 import pytest
-from RohBot.intents.WeatherIntent import WeatherIntent as WI
+from intents.WeatherIntent import WeatherIntent as WI
 
 
 class TestWeatherIntent(object):
