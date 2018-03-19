@@ -6,14 +6,6 @@ from rake_nltk import Rake
 
 class WikipediaIntent(Intent):
 
-    @staticmethod
-    def filterKeyword(str):
-        r = Rake()
-        r.extract_keywords_from_text(str)
-        p = r.get_ranked_phrases()
-        if len(p) < 1:
-            return None
-        return p[0]
 
     @staticmethod
     def getUrlSummaryForTopic(topicName):
@@ -35,6 +27,7 @@ class WikipediaIntent(Intent):
     @staticmethod
     def execute(str, chat_id):
         keyword = WikipediaIntent.filterKeyword(str)
+        keyword = filterKeyword(str)
         if keyword is None:
             answer = "I don't know what to do, sorry. Please reword your request."
         else:

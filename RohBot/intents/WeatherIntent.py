@@ -5,6 +5,7 @@ from Intent import Intent
 import requests
 from Utils import loadOWMToken
 import json
+from NLPUtils import extractEntity
 
 
 class WeatherIntent(Intent):
@@ -50,9 +51,9 @@ class WeatherIntent(Intent):
         return "In {name} there is a {description} and it has {temp} degree celcius".format(**ioData)
 
     @staticmethod
-    def execute(str,  chat_id):
+    def execute(str, chat_id):
         # type: (object, object, object) -> object
-        location = WeatherIntent.extractLocation(str)
+        location = extractEntity(str, 'GPE', removeWords=["weather"])
         if location is None:
             return None
         data = WeatherIntent.getWeatherData(location)
