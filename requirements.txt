@@ -1,3 +1,4 @@
+requests
 python-telegram-bot
 pyyaml
 wikipedia
@@ -6,3 +7,5 @@ rake-nltk
 spacy
 responses
 mock
+coverage
+pytest-cov

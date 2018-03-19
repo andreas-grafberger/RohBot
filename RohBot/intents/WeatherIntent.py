@@ -4,24 +4,20 @@ from BotConnector import BotConnector
 from Intent import Intent
 import requests
 from Utils import loadOWMToken
-import json
 from NLPUtils import extractEntity
 
 
 class WeatherIntent(Intent):
-
     weatherUrl = 'http://api.openweathermap.org/data/2.5/weather'
-    keywords = ['Wetter', 'weather']
-
-    @staticmethod
-    def filterKeyWords(str):
-        split = str.split(' ')
-        for keyword in WeatherIntent.keywords:
-            if keyword not in split:
-                return None
-            else:
-                split.remove(keyword)
-        return split # params will be returned
+    keywords = ['weather', 'hot', 'cold', 'rain', 'sun']
+    utterances = ["What is the weather in %s?",
+                  "What's the weather in %s?",
+                  "What is the weather like in %s?",
+                  "What's the weather like in %s?",
+                  "How hot is it in %s?",
+                  "How cold is it in %s?",
+                  "Does it rain in %s?",
+                  ]
 
     @staticmethod
     def getWeatherData(location, appid=loadOWMToken()):

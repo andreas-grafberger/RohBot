@@ -64,7 +64,7 @@ class TestNLPUtils(object):
         assert (len(detectedEnts) == 0)
 
     def test_extractAllEntities(self):
-        sentence = u"Jesus, They’re good dogs Jeff. Why don't you visit France and return 10€"  # TODO Brent unfortunately didn't get classified correctly :-(
+        sentence = "Jesus, They’re good dogs Jeff. Why don't you visit France and return 10€"  # TODO Brent unfortunately didn't get classified correctly :-(
         detectedEnts = extractAllEntities(sentence)
 
         assert (len(detectedEnts) == 4)
