@@ -2,13 +2,10 @@ from rake_nltk import Rake
 
 from WeatherIntent import WeatherIntent
 from WikipediaIntent import WikipediaIntent
-from ImageIntent import ImageIntent
 from NLPUtils import matchUtterance, filterKeywords
-from intents.PokemonIntent import PokemonIntent
 
 
 class IntentDelegator:
-
     global intents
     intents = [WeatherIntent, WikipediaIntent]
 
@@ -42,8 +39,6 @@ class IntentDelegator:
                     finalIntent = WeatherIntent
         return finalIntent
 
-
     def handleRequest(self, chat_id, message):
         intent = self.recognizeIntent(message)
         intent.execute(message, chat_id)
-
