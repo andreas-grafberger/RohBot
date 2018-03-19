@@ -1,11 +1,10 @@
 import string
-from string import maketrans
 
 import spacy
 from rake_nltk import Rake
-from enum import Enum
 
 nlp = spacy.load('en')
+
 
 def matchUtterance(userText, sampleUtterance):
     charsToRemove = string.punctuation.replace('%', '')
@@ -36,11 +35,13 @@ def matchUtterance(userText, sampleUtterance):
             return True
     return False
 
+
 def filterKeywords(str):
     r = Rake()
     r.extract_keywords_from_text(str)
     p = r.get_ranked_phrases()
     return p
+
 
 def filterKeyword(str):
     r = Rake()
@@ -49,6 +50,7 @@ def filterKeyword(str):
     if len(p) == 0:
         return None
     return p[0]
+
 
 def extractEntity(sentence, entity, removeWords=[]):
     """

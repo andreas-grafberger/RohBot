@@ -24,6 +24,13 @@ class TestNLPUtils(object):
         doesMatch = matchUtterance(userInput, template)
         assert (not doesMatch)
 
+    def test_doesNotMatchUtteranceOnShorterInput(self):
+        template = "What is %s"
+        userInput = "Hey, what?"
+
+        doesMatch = matchUtterance(userInput, template)
+        assert (not doesMatch)
+
     def test_extractCorrectEntities(self):
         sentence = "What's the weather in Germany today?"
         detectedEnts = extractEntities(sentence, entities=["GPE", "DATE"])
@@ -39,12 +46,18 @@ class TestNLPUtils(object):
 
     def test_extractCorrectEntity(self):
         sentence = "How high is the Mount Everest"
-        detectedEnts = extractEntities(sentence, entities=["LOC"])
+        detectedEnts = extractEntity(sentence, entity="LOC")
 
         assert (len(detectedEnts) == 1)
         assert ("the Mount Everest" in detectedEnts)
 
     def test_extractEntityOnEmptyInput(self):
+        sentence = ""
+        detectedEnts = extractEntity(sentence, entity="", removeWords=[])
+
+        assert (len(detectedEnts) == 0)
+
+    def test_extractEntitiesOnEmptyInput(self):
         sentence = ""
         detectedEnts = extractEntities(sentence, entities=[], removeWords=[])
 
