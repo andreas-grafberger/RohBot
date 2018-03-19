@@ -24,41 +24,34 @@ class WeatherIntent(Intent):
         return split # params will be returned
 
     @staticmethod
-    def extractLocation(message):
-        nlp = spacy.load('en')
-        doc = nlp(unicode(message))
-        locs = [ent.text for ent in doc.ents if ent.label_ == 'GPE' and ent.text.lower() != 'weather']
-        return locs[0]
-
-    @staticmethod
-    def getWeatherData(location):
-        appid = loadOWMToken()
-        if appid is None:
-            return None
-        data = {'q':location, 'units': 'metric','APPID':appid}
+    def getWeatherData(location, appid=loadOWMToken()):
+        data = {'q': location, 'units': 'metric', 'APPID': appid}
         r = requests.get(WeatherIntent.weatherUrl, data)
         if r.status_code != 200:
             return None
         return r.json()
 
     @staticmethod
-    def createMessage(data):
+    def formatMessage(data):
         ioData = {
             'name': data['name'],
             'description': data['weather'][0]['description'],
             'temp': data['main']['temp']
         }
-        return "In {name} there is a {description} and it has {temp} degree celcius".format(**ioData)
+        return "In {name} there is a {description} and it has {temp} degrees celcius.".format(**ioData)
+
+    @staticmethod
+    def createResponse(str):
+        location = extractEntity(str, 'GPE', removeWords=["weather"])
+        data = WeatherIntent.getWeatherData(location)
+        return data
 
     @staticmethod
     def execute(str, chat_id):
-        # type: (object, object, object) -> object
-        location = extractEntity(str, 'GPE', removeWords=["weather"])
-        if location is None:
-            return None
-        data = WeatherIntent.getWeatherData(location)
+        data = WeatherIntent.createResponse(str)
         bot = BotConnector.getInstance()
         if data is None:
-            bot.send_message(chat_id, "Weather Service can not be accessed right now.")
+            bot.send_message(chat_id,
+                             "Error handling your request. Api-Call limit exceeded or invalid location.")  # TODO: Differentiate different failures
         else:
-            bot.send_message(chat_id, WeatherIntent.createMessage(data))
+            bot.send_message(chat_id, WeatherIntent.formatMessage(data))
