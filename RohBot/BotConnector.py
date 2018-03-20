@@ -1,16 +1,13 @@
-import telegram
-
-import Utils
-
+from telegram import Bot
+from Utils import loadBotToken
 
 class BotConnector:
-
-    global instance
     instance = None
+    token = None
 
-    @staticmethod
-    def getInstance():
-        global instance
-        if instance is None:
-            instance = telegram.Bot(token=Utils.loadBotToken())
-        return instance
+    @classmethod
+    def getInstance(cls):
+        if cls.instance is None:
+            cls.token = loadBotToken()
+            cls.instance = Bot(cls.token)
+        return cls.instance
