@@ -4,7 +4,7 @@ from BotConnector import BotConnector
 from Intent import Intent
 import requests
 from Utils import loadOWMToken
-from NLPUtils import extractEntity
+import NLPUtils
 
 
 class WeatherIntent(Intent):
@@ -19,16 +19,18 @@ class WeatherIntent(Intent):
                   "Does it rain in %s?",
                   ]
 
-    @staticmethod
-    def getWeatherData(location, appid=loadOWMToken()):
-        data = {'q': location, 'units': 'metric', 'APPID': appid}
-        r = requests.get(WeatherIntent.weatherUrl, data)
+    owmToken = loadOWMToken()
+
+    @classmethod
+    def getWeatherData(cls, location):
+        data = {'q': location, 'units': 'metric', 'APPID': cls.owmToken}
+        r = requests.get(cls.weatherUrl, data)
         if r.status_code != 200:
             return None
         return r.json()
 
-    @staticmethod
-    def formatMessage(data):
+    @classmethod
+    def formatMessage(cls, data):
         ioData = {
             'name': data['name'],
             'description': data['weather'][0]['description'],
@@ -36,14 +38,14 @@ class WeatherIntent(Intent):
         }
         return "In {name} there is a {description} and it has {temp} degrees celcius.".format(**ioData)
 
-    @staticmethod
-    def createResponse(str):
-        location = extractEntity(str, 'GPE', removeWords=["weather"])
+    @classmethod
+    def createResponse(cls, str):
+        location = NLPUtils.extractEntity(str, 'GPE', removeWords=["weather"])
         data = WeatherIntent.getWeatherData(location)
         return data
 
-    @staticmethod
-    def execute(str, chat_id):
+    @classmethod
+    def execute(cls, str, chat_id):
         data = WeatherIntent.createResponse(str)
         bot = BotConnector.getInstance()
         if data is None:

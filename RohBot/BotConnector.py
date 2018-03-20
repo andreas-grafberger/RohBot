@@ -1,6 +1,6 @@
 import telegram
 
-from Utils import loadBotToken
+import Utils
 
 
 class BotConnector:
@@ -12,5 +12,5 @@ class BotConnector:
     def getInstance():
         global instance
         if instance is None:
-            instance = telegram.Bot(token=loadBotToken())
+            instance = telegram.Bot(token=Utils.loadBotToken())
         return instance

@@ -1,5 +1,4 @@
-import pytest
-from intents.CalculatorIntent import CalculatorIntent as CI
+import intents.CalculatorIntent as CI
 
 
 class TestCalculatorIntent(object):
