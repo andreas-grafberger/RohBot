@@ -6,15 +6,15 @@ python:
   - "2.7"
 install:
   - pip install -r requirements.txt
-  - pip install coverage
-  - pip install pytest-cov
+  - python -m spacy download en
 before_script:
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
   - chmod +x ./cc-test-reporter
   - ./cc-test-reporter before-build
 script:
-  - coverage run -m pytest RohBot/test/*
+  - cd RohBot
+  - coverage run -m pytest test/*
   # for codecoverage on codeclimate.com
 after_script:
   - coverage xml
-  - ./cc-test-reporter after-build -t coverage.py --exit-code $TRAVIS_TEST_RESULT
+  - ../cc-test-reporter after-build -t coverage.py --exit-code $TRAVIS_TEST_RESULT

@@ -1,0 +1,5 @@
+from Intent import Intent
+from IntentDelegator import IntentDelegator
+from WikipediaIntent import WikipediaIntent
+from WeatherIntent import WeatherIntent
+from CalculatorIntent import CalculatorIntent

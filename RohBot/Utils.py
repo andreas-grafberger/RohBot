@@ -1,6 +1,10 @@
 import yaml
+import os
 
-def loadBotToken(configFile="../Config"):
+pathToConfig = os.path.dirname(os.path.abspath(__file__)) + "/../Config"
+
+
+def loadBotToken(configFile=pathToConfig):
     try:
         configObj = yaml.load(file(configFile, "r"))
         token = configObj["bot-token"]
@@ -10,7 +14,7 @@ def loadBotToken(configFile="../Config"):
     return token
 
 
-def loadOWMToken(configFile="../Config"):
+def loadOWMToken(configFile=pathToConfig):
     try:
         configObj = yaml.load(file(configFile, "r"))
         token = configObj["owm-token"]

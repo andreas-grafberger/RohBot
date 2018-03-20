@@ -2,26 +2,43 @@ from rake_nltk import Rake
 
 from WeatherIntent import WeatherIntent
 from WikipediaIntent import WikipediaIntent
+from NLPUtils import matchUtterance, filterKeywords
 
 
 class IntentDelegator:
+    global intents
+    intents = [WeatherIntent, WikipediaIntent]
 
     def __init__(self):
         pass
 
-    def filterKeywords(self, str):
-        r = Rake()
-        r.extract_keywords_from_text(str)
-        return r.get_ranked_phrases()
+    def matchUtterances(self, message):
+        matchingIntents = []
+        for intent in intents:
+            for utterance in intent.utterances:
+                if matchUtterance(message, utterance):
+                    matchingIntents.append((len(utterance), intent))
+        if len(matchingIntents) == 0:
+            return None
+        matchingIntents = sorted(matchingIntents, key=lambda x: x[0], reverse=True)
+        return matchingIntents[0][1]
+
+    def recognizeIntent(self, message):
+
+        detectedIntent = self.matchUtterances(message)
+        if detectedIntent is not None:
+            return detectedIntent
+
+        fallBackIntent = WikipediaIntent
+        finalIntent = fallBackIntent
+
+        keyWords = filterKeywords(message)
+        for intent in intents:
+            for word in intent.keywords:
+                if word in keyWords:
+                    finalIntent = WeatherIntent
+        return finalIntent
 
     def handleRequest(self, chat_id, message):
-        intent = WikipediaIntent
-
-        keyWords = self.filterKeywords(message)
-        print(keyWords)
-        for word in WeatherIntent.keywords:
-            if word in keyWords:
-                intent = WeatherIntent
-
+        intent = self.recognizeIntent(message)
         intent.execute(message, chat_id)
-

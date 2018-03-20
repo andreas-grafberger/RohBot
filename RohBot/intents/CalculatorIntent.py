@@ -1,7 +1,7 @@
 from Intent import Intent
 import re
 
-from RohBot.BotConnector import BotConnector
+from BotConnector import BotConnector
 
 
 class CalculatorIntent(Intent):

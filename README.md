@@ -6,4 +6,9 @@
 ## Setup
 1. Add token for bot to the Config file by replacing *xxxx*
 2. Install dependencies with `pip install -r requirements.txt`
-3. Run the bot with `python bot.py`
+3. Load the language model used by this Bot via   
+`python -m spacy download en`
+4. Depending on your configuration you may need to type this in your terminal before running:   
+`export LC_ALL="en_US.UTF-8"`  
+`export LC_CTYPE="en_US.UTF-8"`
+5. Run the bot with `python RohBot/RohBot.py`
