@@ -3,9 +3,10 @@ python-telegram-bot
 pyyaml
 wikipedia
 pytest
+pytest-cov
 rake-nltk
 spacy
 responses
 mock
 coverage
-pytest-cov
+codecov
